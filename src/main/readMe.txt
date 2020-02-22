@@ -61,7 +61,17 @@
             templates：存放模板页面（由于springBoot使用嵌入式的tomcat，默认不支持jsp，所以会需要模板引擎）
             application.properties：在该文件进行调整springBoot的配置
 二·springBoot配置
-
+    配置文件：修改springBoot默认配置
+    yaml文件：以数据为中心，比xml，json更适合配置文件
+    yaml与xml对比（以配置端口为例）：
+        yaml：server：
+                    port：8081
+        xml：<server>
+                <port>8081</port>
+             </server>
+    yaml语法：k:(空格) v来表示一对键值对（：和v之间的空格必须有）
+    以空格的缩进来控制层级关系：只要左对齐的一列数据，都是一个层级的
+    各种写法详见application.yaml
 三·springBoot日志
 四·springBoot的web开发
 五·springBoot和docker

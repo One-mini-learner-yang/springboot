@@ -1,0 +1,14 @@
+#server:
+#  port: 8081
+#字面值，正常书写即可
+#num: 1
+#map(kv键值对）
+#server:
+#  port:8080（多行写法）
+#server: {port: 8080}(单行写法)
+#数组（list，set）
+#animal:
+#  -cat
+#  -dog
+#  -snake(多行写法)
+#animal: [cat,dog,snake](单行写法)
