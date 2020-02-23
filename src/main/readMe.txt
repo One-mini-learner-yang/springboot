@@ -72,6 +72,40 @@
     yaml语法：k:(空格) v来表示一对键值对（：和v之间的空格必须有）
     以空格的缩进来控制层级关系：只要左对齐的一列数据，都是一个层级的
     各种写法详见application.yaml
+    使用@ConfigurationProperties可以将在配置文件配置该类的属性加进容器中
+    @ConfigurationProperties的属性prefix，告诉需要识别配置文件的那一部分（以属性值为开头的）
+    @ConfigurationProperties和@Value的区别
+        1.@ConfigurationProperties多个值注入，@Value为单个值注入
+        2.@ConfigurationProperties支持松散绑定，@Value对与绑定名严格要求为配置文件中的名
+        3.@ConfigurationProperties不支持el表达式，@Value支持
+        4.@ConfigurationProperties支持数据校验（@Validated注解进行数据校验），@Value不支持
+        5.@ConfigurationProperties支持复杂数据的注入（map，list），@Value不支持
+    @ImportResource(locations = 配置文件名)：将自己创建的配置类能被识别使用
+    但springBoot不推荐使用配置文件
+    推荐使用配置类：
+        @Configuration
+        public class config {
+           @Bean  //将该注解下的方法返回值加进容器中，名为方法名
+            public String  hello(){
+               return "";
+           }
+        }
+    在主配置文件（包括yaml文件）支持使用占位符${}
+        随机数：${random.xxx}
+        引用前面配置的值：${引用的值的名称}
+    profile多环境配置
+        创建文件为application-环境名.properties
+        由于默认是读取application.properties中的环境，所以切换环境时，要在application.properties中激活配置文件：spring.profiles.active=环境名
+        （与.properties文件不同，yaml文件支持多文档块，所以不用创建多个配置文件，在一个文件配置多个环境（用文档块分开即可））
+    配置文件自动识别的以下位置
+        file:/config/
+        file:/.
+        classpath:/config/
+        classpath:/
+    从上到下是由优先级的，高优先级会覆盖低优先级的内容，对于不同内容，不同优先级之间会形成互补配置
+    @ConditionalOnxx：满足条件则当前配置类生效（例：@ConditionalOnWebApplication：若为web项目，则该配置类生效）
+    使用配置的总结，对于一些组件，springBoot会自动配置自动配置类，想要在properties/yaml配置相关属性，看相关自动配置类找属性即可
+    在配置文件配置debug=true，可以在运行时日志上写那些自动配置类生效了
 三·springBoot日志
 四·springBoot的web开发
 五·springBoot和docker
