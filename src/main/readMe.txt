@@ -107,6 +107,15 @@
     使用配置的总结，对于一些组件，springBoot会自动配置自动配置类，想要在properties/yaml配置相关属性，看相关自动配置类找属性即可
     在配置文件配置debug=true，可以在运行时日志上写那些自动配置类生效了
 三·springBoot日志
+    springBoot日志的使用：slf4j+logback
+    导入jar包：slf4j-api.jar  logback-classic.jar logback-core.jar
+    由于各种框架拥有自己的框架，若想要整合所有日志框架变成slf4j，先将框架内使用的日志框架剔除出去，官方文档提供相对应的整合jar包（详情查看官方文档http://www.slf4j.org/legacy.html）
+    springBoot底层也是使用slf4j+logback日志：spring-boot-starter-web--->spring-boot-starter--->spring-boot-starter-logging下进行上述的操作，将日志框架整合成slf4j+logback
+    日志的使用：Logger logger=LoggerFactory.getLogger(实例所在类的类名)
+               logger.trace/debug/info/warn/error(级别：trace<debug<info<warn<error)
+    springBoot默认级别为info及以上
+    在配置文件处可配置级别：logging.level.root=
+    在配置文件处可配置日志所在文件：logging.file=
 四·springBoot的web开发
 五·springBoot和docker
 六·springBoot的数据访问
