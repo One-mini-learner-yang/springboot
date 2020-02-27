@@ -3,8 +3,6 @@ package com.yang.springboot.controller;
 import com.yang.springboot.data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -12,6 +10,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/controller")
 //@PropertySource(value = "classpath:application.properties")
 public class controller {
+    @Autowired
+    @Qualifier("data")
+    private data data;
 //    @Value("${data.url}")
 //    private String url;
 //    @Value("${data.driver}")
@@ -23,7 +24,8 @@ public class controller {
     @RequestMapping("hello")
     public String hello()
     {
-//        System.out.println(url+driver);
+//        data.setDriver("4256");
+//        System.out.println(data);
 //        System.out.println(d);
         return "hello world";
     }

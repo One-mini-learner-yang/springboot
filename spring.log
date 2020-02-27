@@ -2444,7 +2444,7 @@ javax.management.InstanceNotFoundException: org.springframework.boot:type=Admin,
 2020-02-24 21:26:12.927 TRACE 10456 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Finished creating instance of bean 'multipartResolver'
 2020-02-24 21:26:12.927 TRACE 10456 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Returning cached instance of singleton bean 'spring.servlet.multipart-org.springframework.boot.autoconfigure.web.servlet.MultipartProperties'
 2020-02-24 21:26:12.928 TRACE 10456 --- [main] o.s.c.e.EventListenerMethodProcessor     : No @EventListener annotations found on bean class: com.yang.springboot.SpringbootApplication$$EnhancerBySpringCGLIB$$c6dde03b
-2020-02-24 21:26:12.928 TRACE 10456 --- [main] o.s.c.e.EventListenerMethodProcessor     : No @EventListener annotations found on bean class: com.yang.springboot.controller.controller
+2020-02-24 21:26:12.928 TRACE 10456 --- [main] o.s.c.e.EventListenerMethodProcessor     : No @EventListener annotations found on bean class: Controller
 2020-02-24 21:26:12.929 TRACE 10456 --- [main] o.s.c.e.EventListenerMethodProcessor     : No @EventListener annotations found on bean class: com.yang.springboot.data
 2020-02-24 21:26:12.929 TRACE 10456 --- [main] o.s.c.e.EventListenerMethodProcessor     : No @EventListener annotations found on bean class: org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration
 2020-02-24 21:26:12.929 TRACE 10456 --- [main] o.s.c.e.EventListenerMethodProcessor     : No @EventListener annotations found on bean class: org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration$TomcatWebSocketConfiguration

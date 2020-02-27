@@ -117,6 +117,50 @@
     在配置文件处可配置级别：logging.level.root=
     在配置文件处可配置日志所在文件：logging.file=
 四·springBoot的web开发
+-----------------------------------------------------------------------------------------------------
+if (!registry.hasMappingForPattern("/webjars/**")) {
+				customizeResourceHandlerRegistration(registry.addResourceHandler("/webjars/**")
+						.addResourceLocations("classpath:/META-INF/resources/webjars/")
+						.setCachePeriod(getSeconds(cachePeriod)).setCacheControl(cacheControl));
+			}
+			-----------------------------------------------------------------------------------------
+    springBoot引入静态依赖的方法是用webjars（也就是引入jar包的方式）
+    网站webjars（类似maven网站）将一些流行的前端静态资源写成依赖，引用时就如源码一般，引用classpath:/META-INF/resources/webjars/（在jar包的/META-INF/resources/webjars/）
+    对于自定义的静态资源文件（比如css，页面，图片）（被/**映射）
+    springBoot默认的静态文件夹：
+    -------------------------------------------------------------------------------------------------
+    private static final String[] CLASSPATH_RESOURCE_LOCATIONS = { "classpath:/META-INF/resources/",
+    			"classpath:/resources/", "classpath:/static/", "classpath:/public/" };
+    			-------------------------------------------------------------------------------------
+        classpath:/MEB-INF/resource/
+        classpath:/resource/
+        classpath:/static/
+        classpath:/public/
+    也可使用spring.resources.static-locations=进行配置静态资源
+    对于欢迎页来说（路径为项目根目录），在访问任何路径的（静态资源）的index.html
+    模板引擎：静态html+动态数据（传统为jsp）
+    springBoot不支持jsp，官方建议thymeleaf
+    在thymeleaf自动配置类中，定义了视图解析器的前后缀（前缀：classpath:/templates/，后缀：.html）
+    springMvc的自动配置原理
+        @ConditionalOnMissingBean(WebMvcConfigurationSupport.class)
+        而注解@EnableWebMvc中@Import({DelegatingWebMvcConfiguration.class})，所以当配置类注解了@EnableWebMvc，相当于全面接管了Mvc的配置，即自动配置类失效（实际开发不建议）
+        ----------------------------------------------------------------------------------------------------------------
+        public ContentNegotiatingViewResolver viewResolver(BeanFactory beanFactory) {
+        			ContentNegotiatingViewResolver resolver = new ContentNegotiatingViewResolver();
+        			resolver.setContentNegotiationManager(beanFactory.getBean(ContentNegotiationManager.class));
+        			}
+
+
+        public static void addBeans(FormatterRegistry registry, ListableBeanFactory beanFactory) {
+            Set<Object> beans = new LinkedHashSet();
+            beans.addAll(beanFactory.getBeansOfType(GenericConverter.class).values());
+            beans.addAll(beanFactory.getBeansOfType(Converter.class).values());
+            beans.addAll(beanFactory.getBeansOfType(Printer.class).values());
+            beans.addAll(beanFactory.getBeansOfType(Parser.class).values());
+        	------------------------------------------------------------------------------------------------------------
+        以上代码说明在springBoot加载组件的时候（如解析器（比如视图解析器），转换器（格式转换器））是去找容器中所有的，也就是说，我们可以自定义这些组件放入容器中，让springBoot加载
+    在springMvc时，我们可以通过xml形式扩展mvc（比如配置拦截器），在springBoot，我们可以使用相关配置类实现WebMvcConfigurationAdapter（现在过期了，建议实现WebMvcConfigurationSupport）
+    案例见mvcConfiguration
 五·springBoot和docker
 六·springBoot的数据访问
 七·springBoot启动配置原理
