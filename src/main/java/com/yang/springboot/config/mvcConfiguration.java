@@ -1,7 +1,9 @@
 package com.yang.springboot.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -12,6 +14,15 @@ import javax.servlet.http.HttpServletResponse;
 
 @Configuration
 public class mvcConfiguration extends WebMvcConfigurationSupport {
+    @Override
+    protected void addViewControllers(ViewControllerRegistry registry) {
+        registry.addRedirectViewController("/","jsp/login.jsp");
+    }
+    @Bean
+    public LocaleResolver localeResolver(){
+        return new loacleResolver();
+    }
+
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new HandlerInterceptor() {

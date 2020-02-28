@@ -161,6 +161,20 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
         以上代码说明在springBoot加载组件的时候（如解析器（比如视图解析器），转换器（格式转换器））是去找容器中所有的，也就是说，我们可以自定义这些组件放入容器中，让springBoot加载
     在springMvc时，我们可以通过xml形式扩展mvc（比如配置拦截器），在springBoot，我们可以使用相关配置类实现WebMvcConfigurationAdapter（现在过期了，建议实现WebMvcConfigurationSupport）
     案例见mvcConfiguration.java
+    --------------------------------------------------------------------------------------------------------------------
+    @Bean
+    		@ConditionalOnMissingBean
+    		@ConditionalOnProperty(prefix = "spring.mvc", name = "locale")
+    		public LocaleResolver localeResolver() {
+    			if (this.mvcProperties.getLocaleResolver() == WebMvcProperties.LocaleResolver.FIXED) {
+    				return new FixedLocaleResolver(this.mvcProperties.getLocale());
+    			}
+    			AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
+    			localeResolver.setDefaultLocale(this.mvcProperties.getLocale());
+    			return localeResolver;
+    		}
+            ------------------------------------------------------------------------------------------------------------
+            @ConditionalOnMissingBean说明springBoot的国际化支持会在容器中没有该类时进行自动配置(自动配置只会定义一种)，所以做国际化切换时要自定义国际化，需要将自定义的类放入容器中
 五·springBoot和docker
 六·springBoot的数据访问
 七·springBoot启动配置原理
