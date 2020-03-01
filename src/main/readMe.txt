@@ -262,6 +262,9 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                     	resolveErrorView方法调用resolve判断是否存在为error/状态码的自定义的页面。如果页面为模板引擎的，创建视图解
                     	析器，若没找到模板引擎，会在静态资源处找是否存在为error/状态码的html页面，若存在，创建视图解析器。若都没有，
                     	则会使用springBoot默认的视图解析器
+
+
+
 五·springBoot和docker
 六·springBoot的数据访问
 七·springBoot启动配置原理
