@@ -2,6 +2,7 @@ package com.yang.springboot.config;
 
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.LocaleResolver;
 

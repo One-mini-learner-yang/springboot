@@ -25,7 +25,7 @@ public class mvcConfiguration extends WebMvcConfigurationSupport {
 
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new HandlerInterceptor() {
+        registry.addInterceptor(new HandlerInterceptor(){
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
                 System.out.println(request.getRequestURI());
@@ -42,6 +42,6 @@ public class mvcConfiguration extends WebMvcConfigurationSupport {
                     System.out.println("拦截后面的");
                 }
             }
-        });
+        }).addPathPatterns().excludePathPatterns();//配置拦截路径和不拦截路径
     }
 }

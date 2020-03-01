@@ -175,6 +175,93 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
     		}
             ------------------------------------------------------------------------------------------------------------
             @ConditionalOnMissingBean说明springBoot的国际化支持会在容器中没有该类时进行自动配置(自动配置只会定义一种)，所以做国际化切换时要自定义国际化，需要将自定义的类放入容器中
+    springBoot的错误流程
+        产生错误，errorMvcAutoConfiguration中的ErrorPageCustomizer就会生效（定制错误的响应规则）；就会来到/error请求
+        ----------------------------------------------------------------------------------------------------------------
+        @Override
+        	public Map<String, Object> getErrorAttributes(WebRequest webRequest, boolean includeStackTrace) {
+        		Map<String, Object> errorAttributes = new LinkedHashMap<>();
+        		errorAttributes.put("timestamp", new Date());
+        		addStatus(errorAttributes, webRequest);
+        		addErrorDetails(errorAttributes, webRequest, includeStackTrace);
+        		addPath(errorAttributes, webRequest);
+        		return errorAttributes;
+        	}
+        	------------------------------------------------------------------------------------------------------------
+            errorMvcAutoConfiguration中的defaultErrorAttributes会添加错误信息
+            ------------------------------------------------------------------------------------------------------------
+            @Bean
+            	@ConditionalOnMissingBean(value = ErrorController.class, search = SearchStrategy.CURRENT)
+            	public BasicErrorController basicErrorController(ErrorAttributes errorAttributes,
+            			ObjectProvider<ErrorViewResolver> errorViewResolvers) {
+            		return new BasicErrorController(errorAttributes, this.serverProperties.getError(),
+            				errorViewResolvers.orderedStream().collect(Collectors.toList()));
+            	}
+            	--------------------------------------------------------------------------------------------------------
+            	并交给basicErrorController（在方法的形参中）
+            	--------------------------------------------------------------------------------------------------------
+            	@RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
+                	public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response) {
+                		HttpStatus status = getStatus(request);
+                		Map<String, Object> model = Collections
+                				.unmodifiableMap(getErrorAttributes(request, isIncludeStackTrace(request, MediaType.TEXT_HTML)));
+                		response.setStatus(status.value());
+                		ModelAndView modelAndView = resolveErrorView(request, response, status, model);
+                		return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
+                	}
+
+                	@RequestMapping
+                	public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
+                		HttpStatus status = getStatus(request);
+                		if (status == HttpStatus.NO_CONTENT) {
+                			return new ResponseEntity<>(status);
+                		}
+                		Map<String, Object> body = getErrorAttributes(request, isIncludeStackTrace(request, MediaType.ALL));
+                		return new ResponseEntity<>(body, status);
+                	}
+                	----------------------------------------------------------------------------------------------------
+                	存在两种处理方式：1.html（页面形式） 2.json（数据的形式）
+                	----------------------------------------------------------------------------------------------------
+                	return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
+                	----------------------------------------------------------------------------------------------------
+                	而在页面形式方法返回的视图解析器处，判断了是否存在错误的视图解析器，若不存在，则使用springBoot默认的
+                	----------------------------------------------------------------------------------------------------
+                	@Override
+                    	public ModelAndView resolveErrorView(HttpServletRequest request, HttpStatus status, Map<String, Object> model) {
+                    		ModelAndView modelAndView = resolve(String.valueOf(status.value()), model);
+                    		if (modelAndView == null && SERIES_VIEWS.containsKey(status.series())) {
+                    			modelAndView = resolve(SERIES_VIEWS.get(status.series()), model);
+                    		}
+                    		return modelAndView;
+                    	}
+                	private ModelAndView resolve(String viewName, Map<String, Object> model) {
+                    		String errorViewName = "error/" + viewName;
+                    		TemplateAvailabilityProvider provider = this.templateAvailabilityProviders.getProvider(errorViewName,
+                    				this.applicationContext);
+                    		if (provider != null) {
+                    			return new ModelAndView(errorViewName, model);
+                    		}
+                    		return resolveResource(errorViewName, model);
+                    	}
+
+                    	private ModelAndView resolveResource(String viewName, Map<String, Object> model) {
+                    		for (String location : this.resourceProperties.getStaticLocations()) {
+                    			try {
+                    				Resource resource = this.applicationContext.getResource(location);
+                    				resource = resource.createRelative(viewName + ".html");
+                    				if (resource.exists()) {
+                    					return new ModelAndView(new HtmlResourceView(resource), model);
+                    				}
+                    			}
+                    			catch (Exception ex) {
+                    			}
+                    		}
+                    		return null;
+                    	}
+                    	------------------------------------------------------------------------------------------------
+                    	resolveErrorView方法调用resolve判断是否存在为error/状态码的自定义的页面。如果页面为模板引擎的，创建视图解
+                    	析器，若没找到模板引擎，会在静态资源处找是否存在为error/状态码的html页面，若存在，创建视图解析器。若都没有，
+                    	则会使用springBoot默认的视图解析器
 五·springBoot和docker
 六·springBoot的数据访问
 七·springBoot启动配置原理
