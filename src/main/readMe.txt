@@ -188,7 +188,7 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
         		return errorAttributes;
         	}
         	------------------------------------------------------------------------------------------------------------
-            errorMvcAutoConfiguration中的defaultErrorAttributes会添加错误信息
+            errorMvcAutoConfiguration中的defaultErrorAttributes会添加错误信息,所以，当我们自定义错误信息，继承defaultErrorAttribute即可
             ------------------------------------------------------------------------------------------------------------
             @Bean
             	@ConditionalOnMissingBean(value = ErrorController.class, search = SearchStrategy.CURRENT)
@@ -262,6 +262,56 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                     	resolveErrorView方法调用resolve判断是否存在为error/状态码的自定义的页面。如果页面为模板引擎的，创建视图解
                     	析器，若没找到模板引擎，会在静态资源处找是否存在为error/状态码的html页面，若存在，创建视图解析器。若都没有，
                     	则会使用springBoot默认的视图解析器
+     springBoot添加servlet，Filter，listener三大组件（以Filter为例）
+     1.创建Filter类（实现Filter接口）
+     2.自定义FilterRegistrationBean，并将其放入容器中
+     -------------------------------------------------------------------------------------------------------------------
+         @Bean
+         public FilterRegistrationBean filterRegistrationBean()
+         {
+             FilterRegistrationBean filterRegistrationBean=new FilterRegistrationBean();
+             filterRegistrationBean.setFilter(new Myfilter());
+             filterRegistrationBean.setUrlPatterns(Arrays.asList("/*","/jsp/login.jsp"));
+             return filterRegistrationBean;
+         }
+         ---------------------------------------------------------------------------------------------------------------
+     springBoot的嵌入式servlet
+        springBoot使用的嵌入式servlet容器支持tomcat，jetty，underTow，由于web的starter（依赖）默认使用tomcat，再切换时需要将tomcat
+        相关依赖忽略，再加入其他jar包
+        ----------------------------------------------------------------------------------------------------------------
+        @Configuration(proxyBeanMethods = false)
+        	@ConditionalOnClass({ Server.class, Loader.class, WebAppContext.class })
+        	public static class JettyWebServerFactoryCustomizerConfiguration {
+
+        		@Bean
+        		public JettyWebServerFactoryCustomizer jettyWebServerFactoryCustomizer(Environment environment,
+        				ServerProperties serverProperties) {
+        			return new JettyWebServerFactoryCustomizer(environment, serverProperties);
+        		}
+
+        	}
+        	------------------------------------------------------------------------------------------------------------
+            （以jetty为例）
+            由于springBoot底层通过判断是否存在相关servlet容器的类来进行创建serverFactory，所以引入相对应的jar包即可使用
+     springBoot使用外置servlet
+        对于springBoot的内置servlet容器优点很明显，轻松使用，不需繁重的配置
+        但是，由于springBoot默认不支持jsp，所以再某些情况会使用外置的servlet容器
+        步骤如下：
+            在创建项目时，将打包方式从jar变成war（因为外置的servlet容器通过运行war包的方式进行部署）
+            进行设置外置的servlet容器，并添加相应的文件列表（webapp）
+            ------------------------------------------------------------------------------------------------------------
+            // 修改启动类，继承 SpringBootServletInitializer 并重写 configure 方法
+            public class SpringBootStartApplication extends SpringBootServletInitializer {
+
+                @Override
+                protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+                    // 注意这里一定要指向原先用main方法执行的Application启动类
+                    return builder.sources(Application.class);
+                }
+            }
+            ------------------------------------------------------------------------------------------------------------
+            在SpringBootApplication的同级创建一个类继承SpringBootServerInitializer，重写configure方法，将springBoot启动类传进去
+            即可使用外置的servlet容器
 五·springBoot和docker
 六·springBoot的数据访问
 七·springBoot启动配置原理
