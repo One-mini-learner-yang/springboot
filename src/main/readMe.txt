@@ -313,6 +313,37 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
             在SpringBootApplication的同级创建一个类继承SpringBootServerInitializer，重写configure方法，将springBoot启动类传进去
             即可使用外置的servlet容器
 五·springBoot和docker
+    什么是docker：docker是一种应用容器引擎，将安装配置好的软件编译成一个镜像，在另一个服务器上使用docker可以使用这个镜像，实现将编译
+    的软件快速的应用在该服务器上
+    常用命令
+    启动docker
+    systemctl start docker
+    查看版本
+    docker --version
+    开机自启
+    systemctl enable docker
+    从docker的docker hub上搜索对应软件
+    docker search 软件名
+    从docker的docker hub上拉取对应软件（类似maven）
+    docker pull 软件名：版本号（若不写版本号，默认为最新版本）
+    查看本地的docker镜像
+    docker images
+    删除本地的docker镜像
+    docker rmi 镜像id（可在上条语句中查到）
+    运行docker镜像
+    dockers run --name 自己定义容器名 -d（后台运行） 运行的镜像名 （若有其他配置，该语句的书写请参考官方书写）
+    （例如tomcat的启动 docker run --name mytomcat -p 8080:8080(将主机的端口映射给容器端口，即将容器中定义的端口和主机端口绑定，冒号前为主机端口) -d tomcat）
+    （例如mysql的启动 docker run -p 3306:3306 --name mysql -v /my/custom:/etc/mysql/conf.d（将主机上的文件夹和容器中的文件相映射） -e MYSQL_ROOT_PASSWORD=root(mysql密码) -d mysql:tag）
+    查看运行中的容器
+    docker ps（若想查看全部容器 docker ps -a）
+    结束运行的的容器
+    docker stop 容器名（运行时自己定义的）
+    开启容器
+    docker start 容器名（运行时自己定义的）
+    删除容器
+    docker rm 容器名（运行时自己定义的）
+    查看容器日志
+    docker logs 容器id
 六·springBoot的数据访问
 七·springBoot启动配置原理
 八·springBoot自定义starts
