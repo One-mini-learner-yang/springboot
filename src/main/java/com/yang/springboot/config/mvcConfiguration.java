@@ -2,6 +2,7 @@ package com.yang.springboot.config;
 
 import com.yang.springboot.Filter.Myfilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -27,7 +28,7 @@ public class mvcConfiguration extends WebMvcConfigurationSupport {
     }
     @Override
     protected void addViewControllers(ViewControllerRegistry registry) {
-        registry.addRedirectViewController("/","jsp/login.jsp");
+            registry.addRedirectViewController("/","jsp/login.jsp");
     }
     @Bean
     public LocaleResolver localeResolver(){

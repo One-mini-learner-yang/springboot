@@ -264,7 +264,7 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                     	则会使用springBoot默认的视图解析器
      springBoot添加servlet，Filter，listener三大组件（以Filter为例）
      1.创建Filter类（实现Filter接口）
-     2.自定义FilterRegistrationBean，并将其放入容器中
+     2.自定义FilterRegistrationBean(xxxRegisterBean,这仅是一个注册器，在注册器中需要加入对应的组件类)，并将其放入容器中
      -------------------------------------------------------------------------------------------------------------------
          @Bean
          public FilterRegistrationBean filterRegistrationBean()
@@ -345,6 +345,24 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
     查看容器日志
     docker logs 容器id
 六·springBoot的数据访问
+------------------------------------------------------------------------------------------------------------------------
+    @ConditionalOnClass(org.apache.tomcat.jdbc.pool.DataSource.class)
+    @ConditionalOnClass(HikariDataSource.class)
+    @ConditionalOnClass(org.apache.commons.dbcp2.BasicDataSource.class)
+
+
+    @ConditionalOnMissingBean(DataSource.class)
+    	@ConditionalOnProperty(name = "spring.datasource.type")
+    --------------------------------------------------------------------------------------------------------------------
+    springBoot默认支持的数据源：org.apache.tomcat.jdbc.pool.DataSource、HikariDataSource、BasicDataSource（引入jar包即可用）
+    也可使用自定义，在配置文件中定义即可
+    Druid的整合和应用
+        1.引入Druid的jar包
+        2.在配置文件进行数据源的配置
+    Druid的监控
+        1.在配置类中新建数据源（使用@ConfigurationProperties注解将相关配置注入（因为springBoot不默认支持Druid数据源））
+        2.在配置类中配置监控的servlet（在注册器中添加StatViewServlet）
+        3.在配置类中配置拦截器（关于的监控的拦截器）
 七·springBoot启动配置原理
 八·springBoot自定义starts
 九·springBoot和缓存
