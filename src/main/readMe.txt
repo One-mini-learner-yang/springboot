@@ -363,6 +363,9 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
         1.在配置类中新建数据源（使用@ConfigurationProperties注解将相关配置注入（因为springBoot不默认支持Druid数据源））
         2.在配置类中配置监控的servlet（在注册器中添加StatViewServlet）
         3.在配置类中配置拦截器（关于的监控的拦截器）
+     mybatis整合
+        1.引入mybatis-springBoot-starter（mybatis官方写的）
+        2.按照mybatis的使用方式（注解版不用配置数据源了，因为在之前配置过了）
 七·springBoot启动配置原理
 八·springBoot自定义starts
 九·springBoot和缓存
