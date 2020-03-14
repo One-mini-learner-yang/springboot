@@ -366,6 +366,7 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
      mybatis整合
         1.引入mybatis-springBoot-starter（mybatis官方写的）
         2.按照mybatis的使用方式（注解版不用配置数据源了，因为在之前配置过了）
+
 七·springBoot启动配置原理
 八·springBoot自定义starts
 九·springBoot和缓存
