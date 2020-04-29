@@ -366,6 +366,8 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
      mybatis整合
         1.引入mybatis-springBoot-starter（mybatis官方写的）
         2.按照mybatis的使用方式（注解版不用配置数据源了，因为在之前配置过了）
+     mybatis的缓存
+        由于spring对于处理一次数据访问时都去申请一个sqlSession（访问结束释放资源），所以在spring环境下mybatis的一级缓存失效了
 七·springBoot启动配置原理
 八·springBoot自定义starts
 九·springBoot和缓存
