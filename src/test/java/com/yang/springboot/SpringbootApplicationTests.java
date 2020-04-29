@@ -8,17 +8,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
+import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 
 class SpringbootApplicationTests {
     @Autowired
-    private DataSource dataSource;
+    mapperInterface mapperInterface;
     @Test
     void contextLoads() {
         Logger logger = (Logger) LoggerFactory.getLogger(getClass().getName());
-//        logger.info("111111");
-        logger.info(String.valueOf(dataSource));
+        List<Map<String,Object>> a=mapperInterface.selectA();
+        List<Map<String,Object>> b=mapperInterface.selectB();
+        logger.info(String.valueOf(a));
+        logger.info(String.valueOf(b));
     }
 
 }
