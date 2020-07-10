@@ -367,8 +367,11 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
         1.引入mybatis-springBoot-starter（mybatis官方写的）
         2.按照mybatis的使用方式（注解版不用配置数据源了，因为在之前配置过了）
      mybatis的缓存
+        首先介绍mapper的运行机制
+            mapper是由sqlSession.getMapper获取的，再根据mapper中的方法的参数值，返回值，调用sqlSession不同的方法，对于同一sqlSession中的同一数据访问会将第一次写如缓存，之后读取缓
         由于spring对于处理一次数据访问时都去申请一个sqlSession（访问结束释放资源），所以在spring环境下mybatis的一级缓存失效了
 七·springBoot启动配置原理
+
 八·springBoot自定义starts
 九·springBoot和缓存
 十·springBoot和消息
