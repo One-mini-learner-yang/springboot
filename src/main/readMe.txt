@@ -371,8 +371,29 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
             mapper是由sqlSession.getMapper获取的，再根据mapper中的方法的参数值，返回值，调用sqlSession不同的方法，对于同一sqlSession中的同一数据访问会将第一次写如缓存，之后读取缓
         由于spring对于处理一次数据访问时都去申请一个sqlSession（访问结束释放资源），所以在spring环境下mybatis的一级缓存失效了
 七·springBoot启动配置原理
-
+    在springBoot项目启动过程中注意一下四个事件的回调机制：
+        配置在/META-INF:ApplicationContextInitializer     SpringApplicationRunListener
+        放在IOC中的：ApplicationRunner     CommandLineRunner
+    启动过程：
+        创建SpringApplication对象：保存主配置类，判断是否是一个web应用，读取在类路径下的/META-INF/spring.factories中配置的ApplicationContextInitializer  ApplicationListener并保存，在多个配置类中找到带main方法的主配置类
+        执行run方法：在/META-INF/spring.factories中获取SpringApplicationRunListener，执行SpringApplicationRunListener.starting()，准备环境，环境准备完成之后，执行SpringApplicationRunListener.environmentPrepared()，创建ApplicationContext，决定创建普通ioc还是web的ioc，
+        将准备好的上下文环境放进ioc，回调ApplicationContextInitializer.initializer()，执行SpringApplicationRunListener.contextLoaded()，刷新ioc，初始化ioc，在ioc中获取全部ApplicationRunner     CommandLineRunner并回调其方法，回调SpringApplicationRunListener.finished()。
 八·springBoot自定义starts
+    自定义starter模式：启动器仅作为依赖引入，独自创建专门写自动配置的模块，由使用方引入启动器，启动器引入自动配置模块
+    步骤：启动器引入自动配置依赖模块pom文件
+    编写自动配置模块
+      @Configuration  //指定这个类是一个配置类
+      @ConditionalOnXXX  //在指定条件成立的情况下自动配置类生效
+      @AutoConfigureAfter  //指定自动配置类的顺序
+      @Bean  //给容器中添加组件
+
+      @ConfigurationPropertie结合相关xxxProperties类来绑定相关的配置
+      @EnableConfigurationProperties //让xxxProperties生效加入到容器中
+
+      自动配置类要能加载
+      将需要启动就加载的自动配置类，配置在META-INF/spring.factories
+      org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+      配置类根路径
 九·springBoot和缓存
 十·springBoot和消息
 十一·springBoot和检索
