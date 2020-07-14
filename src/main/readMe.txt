@@ -395,7 +395,39 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
       org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
       配置类根路径
 九·springBoot和缓存
-
+    1.JSR107
+        java定义的规范，定义了5个接口，分别是CachingProvider, CacheManager, Cache, Entry和 Expiry。
+        为了简化开发，spring支持注解开发，每次调用需要缓存功能的方法时，Spring会检查检查指定参数的指定的目标方法是否已经被调用过；如果有就直接从缓存中获取方法调用后的结果，如果没有就调用方法并缓存结果后返回给用户。下次调用直接从缓存中获取。
+    2.缓存注解（重要概念）以及其注解中主要的参数
+        Cache：缓存接口，定义缓存操作，子接口有：RedisCache、EhCacheCache、ConcurrentMapCache
+        CacheManager：缓存管理器，管理各种缓存组件
+        @Cacheable：主要针对方法的配置，能根据方法请求的参数对其结果进行缓存
+        @CacheEvict：清空缓存（用于删除操作）
+        @CachePut：保证方法被调用，并把结果放入缓存（用于更新操作）
+        @EnableCaching：开启注解缓存开发
+        注解参数
+            @Cacheable/@CacheEvict/@CachePut
+                value：缓存的名称，在spring的配置文件中定义，必须指定至少一个
+                例如：
+                @Cacheable(value=”mycache”) 或者
+                @Cacheable(value={”cache1”,”cache2”}
+                key：缓存的key，可以为空，为空情况按照方法的所有参数进行组合
+                例如：
+                @Cacheable(value=”testcache”,key=”#userName”)
+                condition：缓存条件，可以为空，当该参数内的条件为true时才进行缓存/清除缓存，在调用前后都能判断
+                例如：
+                @Cacheable(value=”testcache”,condition=”#userName.length()>2”)
+            @CacheEvict
+                allEntries：是否清空所有缓存内容，true为清空所有，默认false
+                例如：
+                @CachEvict(value=”testcache”,allEntries=true)
+                beforeInvocation：是否在执行方法前执行，为true则在方法执行前执行，默认false，默认情况下，方法执行抛出异常不会清空缓存
+                例如：
+                @CachEvict(value=”testcache”，beforeInvocation=true)
+            @CachePut/@Cacheable
+                unless：缓存条件，与condition不同的是，只在方法执行后判断该参数内的条件（故常用在判断结果的条件），且只有参数内条件为false才会缓存
+                例如：
+                @Cacheable(value=”testcache”,unless=”#result == null”)
 十·springBoot和消息
 十一·springBoot和检索
 十二·springBoot和任务
