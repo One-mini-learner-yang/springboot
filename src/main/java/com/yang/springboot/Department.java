@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 
 @Data
-@Component("data")
-public class data implements Serializable {
-    private String url;
-    private String driver;
+@Component
+public class Department implements Serializable {
+    private int id;
+    private String departmentName;
 }

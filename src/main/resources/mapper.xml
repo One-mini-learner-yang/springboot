@@ -2,15 +2,15 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yang.springboot.mapperInterface">
-    <cache eviction="FIFO"
-            flushInterval="60000"
-            size="512"
-            readOnly="true"></cache>
-    <select id="selectA" resultType="java.util.Map">
-        select * from test
+<mapper namespace="com.yang.springboot.MapperInterface">
+<!--    <cache eviction="FIFO"-->
+<!--            flushInterval="60000"-->
+<!--            size="512"-->
+<!--            readOnly="true"></cache>-->
+    <select id="selectDepartmentById" resultType="com.yang.springboot.Department">
+        select * from department where id=#{id}
     </select>
-    <select id="selectB" resultType="java.util.Map">
-        select *from test
+    <select id="selectEmployeeById" resultType="com.yang.springboot.Employee">
+        select *from employee where id=#{id}
     </select>
 </mapper>

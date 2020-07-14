@@ -395,6 +395,7 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
       org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
       配置类根路径
 九·springBoot和缓存
+
 十·springBoot和消息
 十一·springBoot和检索
 十二·springBoot和任务

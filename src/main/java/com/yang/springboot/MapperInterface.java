@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mapper
-public interface mapperInterface {
-    public List<Map<String,Object>> selectA();
-    public List<Map<String,Object>> selectB();
+public interface MapperInterface {
+    public Department selectDepartmentById(int id);
+    public Employee selectEmployeeById(int id);
 }
