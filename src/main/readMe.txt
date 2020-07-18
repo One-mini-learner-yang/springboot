@@ -344,6 +344,8 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
     docker rm 容器名（运行时自己定义的）
     查看容器日志
     docker logs 容器id
+
+    使用docker中国镜像加速进行docker下载速度更快
 六·springBoot的数据访问
 ------------------------------------------------------------------------------------------------------------------------
     @ConditionalOnClass(org.apache.tomcat.jdbc.pool.DataSource.class)
@@ -417,6 +419,7 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                 condition：缓存条件，可以为空，当该参数内的条件为true时才进行缓存/清除缓存，在调用前后都能判断
                 例如：
                 @Cacheable(value=”testcache”,condition=”#userName.length()>2”)
+                sync：异步模式缓存，默认为false，当为true时unless不可用
             @CacheEvict
                 allEntries：是否清空所有缓存内容，true为清空所有，默认false
                 例如：
@@ -428,6 +431,70 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                 unless：缓存条件，与condition不同的是，只在方法执行后判断该参数内的条件（故常用在判断结果的条件），且只有参数内条件为false才会缓存
                 例如：
                 @Cacheable(value=”testcache”,unless=”#result == null”)
+    3.整合redis
+        1.环境整合
+            在linux系统上的调整，关闭防火墙
+            调整redis.config，注释bind 127.0.0.1（redis默认开启这条配置，仅允许本机访问），将protected-mode yes改为no（保护机制，默认为yes）
+        2.相关类使用
+            springBoot自动注入了RedisTemplate和StringRedisTemplate
+            RedisTemplate：对于k-v都是对象的，采用的序列化为jdk序列化cel
+            StringRedisTemplate：对于k-v是string-对象的，采用的序列化为string序列化策略
+            二者都提供一下方法：
+                opsForValue();//操作字符串
+                opsForHash();//操作hash
+                opsForList();//操作list
+                opsForSet();//操作set
+                opsForZSet();//操作有序set
+           面对不同数据结构，选择相应方法下的操作方法即可。
+        3.问题出现：当我们在用RedisTemplate缓存实体类对象时，由于jdk序列化策略保存的数据格式不是我们想要的。
+        4.解决：自定义RedisTemplate<Object,实体类对象中>放入容器中，在配置中设置序列化策略为jackson2JsonRedisSerializer（json序列化策略）
+    4.redis做缓存原理
+        ----------------------------------------------------------------------------------------------------------------
+        mappings.put(CacheType.GENERIC, GenericCacheConfiguration.class);
+        mappings.put(CacheType.EHCACHE, EhCacheCacheConfiguration.class);
+        mappings.put(CacheType.HAZELCAST, HazelcastCacheConfiguration.class);
+        mappings.put(CacheType.INFINISPAN, InfinispanCacheConfiguration.class);
+        mappings.put(CacheType.JCACHE, JCacheCacheConfiguration.class);
+        mappings.put(CacheType.COUCHBASE, CouchbaseCacheConfiguration.class);
+        mappings.put(CacheType.REDIS, RedisCacheConfiguration.class);
+        mappings.put(CacheType.CAFFEINE, CaffeineCacheConfiguration.class);
+        mappings.put(CacheType.SIMPLE, SimpleCacheConfiguration.class);
+        mappings.put(CacheType.NONE, NoOpCacheConfiguration.class);
+        ----------------------------------------------------------------------------------------------------------------
+        springBoot的CacheConfiguration会根据环境引入以上的类，当没有引入redis环境时，springBoot用的是SimpleCacheConfiguration.class
+        将缓存数据加进ConcurrentMap中，加载SimpleCacheConfiguration.class进容器条件@ConditionalOnMissingBean(CacheManager.class)
+        当加入redis环境后，会先加载 RedisCacheConfiguration.class，该类会在容器中加进RedisCacheManager，之后就不会加载SimpleCacheConfiguration.class
+        实现redis做缓存的目的。
+    5.自动配置cacheManager
+        使用注解方式进行redis缓存，需要改变RedisCacheManager默认配置一些属性（比如序列化策略）
+        在springBoot1.x版本中，对于redisCacheManager的自定义方式：
+            //缓存管理器
+            @Bean
+            public CacheManager cacheManager(形参处引入对应处理的redisTemplate) {
+                RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
+                //设置缓存过期时间
+                cacheManager.setDefaultExpiration(10000);
+                return cacheManager;
+            }    //缓存管理器
+        在springBoot2.x版本后，RedisCacheManager取消了1.0版本中的public RedisCacheManager(RedisOperations redisOperations)的这个构造方法，所以我们无法再用。
+        提供的构造器为：
+             public RedisCacheManager(RedisCacheWriter cacheWriter, RedisCacheConfiguration defaultCacheConfiguration) {
+                    this(cacheWriter, defaultCacheConfiguration, true);
+                }
+        故，自定义的RedisCacheManager配置为：
+             @Bean
+                public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+                    //初始化一个RedisCacheWriter
+                    RedisCacheWriter redisCacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory);
+                    //设置CacheManager的值序列化方式为json序列化
+                    RedisSerializer redisSerializer=new GenericFastJsonRedisSerializer();
+                    RedisSerializationContext redisSerializationContext=RedisSerializationContext.fromSerializer(redisSerializer);
+                    RedisCacheConfiguration redisCacheConfiguration=RedisCacheConfiguration.defaultCacheConfig().serializeValuesWith(redisSerializationContext.getValueSerializationPair());
+                    //设置默认超过期时间是30秒
+                    redisCacheConfiguration.entryTtl(Duration.ofSeconds(30));
+                    RedisCacheManager redisCacheManager=new RedisCacheManager(redisCacheWriter,redisCacheConfiguration);
+                    return redisCacheManager;
+                }
 十·springBoot和消息
 十一·springBoot和检索
 十二·springBoot和任务
