@@ -496,6 +496,104 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                     return redisCacheManager;
                 }
 十·springBoot和消息
+    消息中间件用处：
+        1.将数据写进消息队列中，想进行什么操作从消息队列中获取数据，实现异步处理
+        2.使用消息队列作为各个组件的联系，实现应用的解耦
+        3.由于消息队列的存储量有限，面对高访问量时（例如秒杀），可以作为访问的筛减，实现流量削峰
+    消息中间件模式类型：
+        点对点式：消息的发送者和消费者只有唯一一个（消息的一对一）
+        发布订阅式：多个消费者同时订阅一个主题，发送者发送消息到主题时，这多个消费者会同时受到消息（消息的一对多）
+    消息中间件的实现协议：
+        1.JMS：是基于JVM消息代理的规范（ActiveMQ，HornetMQ是对JMS的实现）
+            提供的消息模型：Peer-2-Peer和Pub/sub（点对点和发布订阅）
+        2.AMQP：高级消息队列协议，兼容JMS（该协议是所有编程语言通用的协议）（RabbitMQ是对AMQP的实现）
+            提供的消息模型：direct exchange，fanout exchange，topic change，headers exchange，system exchange（除了第一个是一对一的以外，后四个均为一对多的消息模型，仅在路由机制上更详细的划分）
+    RabbitMQ：
+        核心概念：
+            Message
+            消息，消息是不具名的，它由消息头和消息体组成。消息体是不透明的，而消息头则由一系列的可选属性组
+            成，这些属性包括routing-key（路由键）、priority（相对于其他消息的优先权）、delivery-mode（指出
+            该消息可能需要持久性存储）等。
+            Publisher
+            消息的生产者，也是一个向交换器发布消息的客户端应用程序。
+            Exchange
+            交换器，用来接收生产者发送的消息并将这些消息路由给服务器中的队列。
+            Exchange有4种类型：direct(默认)，fanout, topic, 和headers，不同类型的Exchange转发消息的策略有
+            所区别
+            Queue
+            消息队列，用来保存消息直到发送给消费者。它是消息的容器，也是消息的终点。一个消息
+            可投入一个或多个队列。消息一直在队列里面，等待消费者连接到这个队列将其取走。
+            Binding
+            绑定，用于消息队列和交换器之间的关联。一个绑定就是基于路由键将交换器和消息队列连
+            接起来的路由规则，所以可以将交换器理解成一个由绑定构成的路由表。
+            Exchange 和Queue的绑定可以是多对多的关系。
+            Connection
+            网络连接，比如一个TCP连接。
+            Channel
+            信道，多路复用连接中的一条独立的双向数据流通道。信道是建立在真实的TCP连接内的虚
+            拟连接，AMQP 命令都是通过信道发出去的，不管是发布消息、订阅队列还是接收消息，这
+            些动作都是通过信道完成。因为对于操作系统来说建立和销毁 TCP 都是非常昂贵的开销，所
+            以引入了信道的概念，以复用一条 TCP 连接。
+            Consumer
+            消息的消费者，表示一个从消息队列中取得消息的客户端应用程序。
+            Virtual Host
+            虚拟主机，表示一批交换器、消息队列和相关对象。虚拟主机是共享相同的身份认证和加
+            密环境的独立服务器域。每个 vhost 本质上就是一个 mini 版的 RabbitMQ 服务器，拥有
+            自己的队列、交换器、绑定和权限机制。vhost 是 AMQP 概念的基础，必须在连接时指定，
+            RabbitMQ 默认的 vhost 是 / 。
+            Broker
+            表示消息队列服务器实体
+        运行机制：
+            发送者将消息发给交换器，交换器根据绑定的路由机制（路由键）将消息传给对应的消息队列，再由消费者从消息队列中取走消息
+        交换机的类型：
+            RabbitMQ提供了四种交换机类型：direct、fanout、topic、headers（其中。headers 匹配 AMQP 消息的 header 而不是路由键， headers 交换器和 direct 交换器完全一致，但性能差很多，目前几乎用不到了）
+            direct：严格根据路由键和消息队列绑定的路由键完全匹配
+            fanout：广播模式，将消息传给绑定在该交换器的所有消息队列上
+            topic：支持类似模糊查询一样的机制进行一对多的消息传送，例如，路由键为yang.news的消息会发送到绑定的路由键为*。news和yang.#的消息队列中
+            （注：其中*代表一个单词，#代表没有单词，一个单词或多个单词）
+        springBoot的整合
+            引入spring-boot-starter-amqp依赖
+            RabbitAutoConfiguration中通过ConnectFactory实现读取配置来进行连接消息代理
+            springBoot已经将rabbitTemplate注入，该类进行消息的传送与取出
+                传送：rabbitTemplate.convertAndSend（可将任意类型的对象传入消息队列）
+                取出：rabbitTemplate.receiveAndConvert（可将消息从队列中取出）
+                （注：在传入消息时，由于默认使用的时java序列化策略，导致传入内容不是我们平常需要的json数据，可自定义MessageConvert，返回Jackson2JsonMessageConverter）
+            使用@EnableRabbit开启rabbit注解开发
+            使用@RabbitListener(queues = "yang.news")进行监控（监控也是消费者行为）
+            （注；该注解的queues属性是数组类型，即可监控多个队列）
+        rabbitMQ的特性
+            1.消息确认机制
+                问题出现：如果在消费者代码实现过程中产生异常，则想要消息不会从队列中被消费
+                解决：将默认的自动确认改为手动确认
+                具体解决：
+                    1.在配置文件中对rabbitMQ进行配置
+                        # 开启发送确认
+                        spring.rabbitmq.publisher-confirms=true
+                        # 开启发送失败退回
+                        spring.rabbitmq.publisher-returns=true
+                        #开启ACK
+                        spring.rabbitmq.listener.direct.acknowledge-mode=manual
+                        spring.rabbitmq.listener.simple.acknowledge-mode=manual
+                    2.在消费者接收消息业务代码结束后手动确认
+                        channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+            2.消息持久化
+                问题出现：如果rabbit服务器宕机，需要将相关的交换器，队列，消息持久化
+                解决：在交换器，队列的创建以及消息的发送时设置为持久化
+                具体实现：
+                    原生环境下：
+                        在创建交换器，队列将durable（是否持久化）属性设为true
+                        在消息发送时，将消息做持久化处理
+                            channel.basicPublish("", queue_name, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes());
+                            //MessageProperties.PERSISTENT_TEXT_PLAIN表示持久化
+                    在spring环境下：
+                        在创建交换器，队列将durable（是否持久化）属性设为true
+                        在消息发送时，不需要做处理
+                            原因：rabbitTemplate.convertAndSend(exchange, routeKey, message);底层引用的 MessageProperties的默认持久化策略为MessageDeliveryMode.PERSISTENT（默认持久化）
+            3.限流
+                有时候业务要求会有限流要求
+                实现：配置文件中配置
+                        #在单个请求中处理的消息个数，他应该大于等于事务数量(unack的最大数量)
+                        spring.rabbitmq.listener.simple.prefetch=2
 十一·springBoot和检索
 十二·springBoot和任务
 十三·springBoot和安全

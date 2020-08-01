@@ -23,10 +23,10 @@ public class cacheController {
     private RedisTemplate redisTemplate;
     @Cacheable(cacheNames = "emp",key = "#id")
     @RequestMapping("searchEmployeeById")
-    public Employee searchEmployeeById(int id){
+    public int searchEmployeeById(int id){
         Employee employee=  mapperInterface.selectEmployeeById(id);
 //        System.out.println(myRedisTemplate.opsForValue().get("emp"));
-        return employee;
+        return 1;
     }
 
 }

@@ -27,11 +27,11 @@ public class myRedisConfig {
     @Bean
     public RedisCacheManager myRedisCacheManager(RedisConnectionFactory redisConnectionFactory){
         RedisCacheWriter redisCacheWriter=RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory);
-//        RedisSerializer redisSerializer=new GenericJackson2JsonRedisSerializer();
+        RedisSerializer redisSerializer=new GenericJackson2JsonRedisSerializer();
         /**
          * 使用FastJson会解决GenericJackson2JsonRedisSerializer对于没有set方法类的序列化失败情况
          */
-        RedisSerializer redisSerializer=new GenericFastJsonRedisSerializer();
+//        RedisSerializer redisSerializer=new GenericFastJsonRedisSerializer();
         RedisSerializationContext redisSerializationContext=RedisSerializationContext.fromSerializer(redisSerializer);
         RedisCacheConfiguration redisCacheConfiguration=RedisCacheConfiguration.defaultCacheConfig().serializeValuesWith(redisSerializationContext.getValueSerializationPair());
         RedisCacheManager redisCacheManager=new RedisCacheManager(redisCacheWriter,redisCacheConfiguration);
