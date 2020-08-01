@@ -27,6 +27,7 @@ public class cacheController {
         Employee employee=  mapperInterface.selectEmployeeById(id);
 //        System.out.println(myRedisTemplate.opsForValue().get("emp"));
         return 1;
+        //此处证明@Cacheable加入的缓存内容为返回值
     }
 
 }
