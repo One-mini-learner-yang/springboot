@@ -2,6 +2,7 @@ package com.yang.springboot.controller;
 
 import com.sun.deploy.net.HttpResponse;
 import org.springframework.http.HttpRequest;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 @RequestMapping("/jsp")
 public class addSessionController {
     @RequestMapping("addSessionController")
-    public void  add(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,int id) throws IOException {
+    public void  add( HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, int id) throws IOException {
         httpServletResponse.setContentType("text/html;charset=UTF-8");
         String[] names={"ad钙奶","泡面","火腿肠","雀巢"};
         String name=names[id];

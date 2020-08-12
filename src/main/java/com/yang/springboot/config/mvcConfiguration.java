@@ -9,6 +9,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
@@ -18,18 +19,24 @@ import java.util.Arrays;
 
 @Configuration
 public class mvcConfiguration extends WebMvcConfigurationSupport {
-    @Bean
-    public FilterRegistrationBean filterRegistrationBean()
-    {
-        FilterRegistrationBean filterRegistrationBean=new FilterRegistrationBean();
-        filterRegistrationBean.setFilter(new Myfilter());
-        filterRegistrationBean.setUrlPatterns(Arrays.asList("/*","/jsp/login.jsp"));
-        return filterRegistrationBean;
-    }
+//    @Bean
+//    public FilterRegistrationBean filterRegistrationBean()
+//    {
+//        FilterRegistrationBean filterRegistrationBean=new FilterRegistrationBean();
+//        filterRegistrationBean.setFilter(new Myfilter());
+//        filterRegistrationBean.setUrlPatterns(Arrays.asList("/*","/jsp/login.jsp"));
+//        return filterRegistrationBean;
+//    }
     @Override
     protected void addViewControllers(ViewControllerRegistry registry) {
             registry.addRedirectViewController("/","jsp/login.jsp");
     }
+
+//    @Override
+//    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+//        super.addResourceHandlers(registry);
+//    }
+
     @Bean
     public LocaleResolver localeResolver(){
         return new loacleResolver();

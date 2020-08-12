@@ -344,8 +344,16 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
     docker rm 容器名（运行时自己定义的）
     查看容器日志
     docker logs 容器id
-
-    使用docker中国镜像加速进行docker下载速度更快
+    进入容器的内部文件结构（容器得事先运行）
+    docker exe -it 容器id（容器名） /bin/bash
+    退出bash模式
+    ctrl+p+q：不结束容器运行
+    ctrl+d：结束容器运行
+    从容器内部文件加拷贝文件到宿主电脑
+    docker cp 容器名:文件路径  想要复制到的宿主电脑位置（同样，将宿主电脑文件复制到容器文件夹中，将二者位置调换即可）
+    在docker容器内部使用vim应先下载vim
+    apt-get update、apt-get install vim
+    使用阿里容器管理进行加速，将加速的配置内容加入/etc/docker/daemon.json//使用docker中国镜像加速进行docker下载速度更快
 六·springBoot的数据访问
 ------------------------------------------------------------------------------------------------------------------------
     @ConditionalOnClass(org.apache.tomcat.jdbc.pool.DataSource.class)
@@ -561,8 +569,9 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
             使用@EnableRabbit开启rabbit注解开发
             使用@RabbitListener(queues = "yang.news")进行监控（监控也是消费者行为）
             （注；该注解的queues属性是数组类型，即可监控多个队列）
+            在使用AmqpAdmin创建队列以及交换器时，将这个过程放在bean初始化中，及将该方法加@Bean注解（否则报错）
         rabbitMQ的特性
-            1.消息确认机制
+            1.消息确认机制（消费者）
                 问题出现：如果在消费者代码实现过程中产生异常，则想要消息不会从队列中被消费
                 解决：将默认的自动确认改为手动确认
                 具体解决：
@@ -576,7 +585,13 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                         spring.rabbitmq.listener.simple.acknowledge-mode=manual
                     2.在消费者接收消息业务代码结束后手动确认
                         channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
-            2.消息持久化
+            2.消息的确认机制（生产者）
+                问题出现：在生产者到交换器，交换器到队列的过程中，消息的传递准确性不是百分之百的
+                解决：在消息传到交换器，队列时进行一个确认信息的发送
+                具体实现：
+                    一个类放入仓库，实现RabbitTemplate.ConfirmCallback,RabbitTemplate.ReturnCallback，重写对应的confirm，returnedMessage方法
+                    再使用@PostConstruct注解（该注解会在容器实例化之前进行），对rabbitTemplate进行设置，设置其confirm与return的回滚
+            3.消息持久化
                 问题出现：如果rabbit服务器宕机，需要将相关的交换器，队列，消息持久化
                 解决：在交换器，队列的创建以及消息的发送时设置为持久化
                 具体实现：
@@ -589,12 +604,91 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                         在创建交换器，队列将durable（是否持久化）属性设为true
                         在消息发送时，不需要做处理
                             原因：rabbitTemplate.convertAndSend(exchange, routeKey, message);底层引用的 MessageProperties的默认持久化策略为MessageDeliveryMode.PERSISTENT（默认持久化）
-            3.限流
+            4.限流
                 有时候业务要求会有限流要求
                 实现：配置文件中配置
                         #在单个请求中处理的消息个数，他应该大于等于事务数量(unack的最大数量)
                         spring.rabbitmq.listener.simple.prefetch=2
+            5.延时
+                死信：一个消息超过了规定时间，无法被消费，就称这条消息为死信
+                死信队列：一个死信被死信交换器转到死信队列
+                延时的原理：设置一个消息的时间，时间到了，通过死信交换器转入死信队列，再从死信队列中取走消息
+                实现：死信交换器和死信队列都是普通的交换器和队列，在创建消息经过的第一个队列时，设置死信交换器的名字以及转入死信队列的路由键
+                            Map map=new HashMap();
+                            map.put("x-dead-letter-exchange","dead_Exchange");
+                            map.put("x-dead-letter-routing-key","receive_key");
+                            amqpAdmin.declareQueue(new Queue("dead_Queue",true,false,false,map));
+                     之后发送消息时，设置消息的ttl
+                         rabbitTemplate.convertAndSend("dead_Exchange","dead_Message",map,message -> {
+                                    message.getMessageProperties().setExpiration("10000");
+                                    return message;
+                                });
+                     之后消费死信队列中消息即可。
 十一·springBoot和检索
+    ElasticSearch：是基于restful设计模式的搜索引擎
+    restful：使用了restUrl代替了传统url
+        传统url：localhost:8080/项目名/user?id=1    ====>参数采用问号连接
+        restUrl：localhost:8080/项目名/user/1/      ====>参数作为url的一部分
+    restful模式下，采用四种访问方式对应CRUD的四种操作，GET(查询) PUT(添加) POST(更新) DELETE(删除)
+    springBoot对于restful的支持
+        @GetMapping @PutMapping @PostMapping @DeleteMapping 四种注解对应四种请求方式
+        对于参数的获取
+            例：/search/12/
+                @GetMapping("/search/{id}/")
+                public void search（@PathVariable("id") int id）
+    全文检索：以文本作为检索对象，找出相关词语的文本信息
+    ElasticSearch的结构
+        索引：过去版本官方比喻成数据库（后来修改，官方认为是个糟糕的比喻），一个索引是相似文档的集合
+        类型：过去版本官方比喻成表（因此5.x版本前支持一个索引下多个类型，但后逐渐修改，7.x后完全不支持，目前一个索引下仅可有一个类型）
+        映射：定义一个类型的约束，定义一个类型中数据的结构
+        文本：类似表中的一条记录，是一份实际的数据信息
+    ElasticSearch操作
+        操作环境：可以使用postman按照不同请求方式执行不同操作，也可使用ES官方的Kibana（使用时注意kibana的版本要和ES版本一致）
+        针对索引操作：
+            创建索引：PUT /索引名
+            查询索引：GET /_cat/indices?v
+            删除索引：DELETE  /索引名
+        针对类型操作
+            创建类型：PUT /索引名/
+                     {
+                        "mappings":{
+                            "类型名":{
+                                "properties":{
+                                    "字段名":{"type":"类型名"},
+                                    "字段名":{"type":"类型名"}
+                                }
+                            }
+                        }
+                     }
+                     注；若是使用postman，将上面json作为请求体（格式要用json）
+                     ES提供了类型中属性的类型为：integer keyword boolean text date......(仅列举了几个)
+            查看索引下类型：GET /索引名
+            查看索引下类型约束：GET /索引名/_mapping
+        针对文档操作：
+            创建文档：PUT /索引名/类型名/文档id（唯一标识）
+                     {
+                        "字段名":"字段值",
+                        "字段名":"字段值"
+                     }
+            查看文档：GET /索引名/类型名/文档id
+            查看一个类型下所有文档：GET /索引名/类型名/_search
+            修改文档：POST /索引名/类型名/文档id（该方法会将原文档删除，再将修改内容的文档创建，即不会保留原文档内容）
+                     {
+                        "字段名":"字段值"
+                     }
+                     POST /索引名/类型名/文档id/_update
+                      {
+                        "doc":{
+                            "字段名":"字段值"
+                            }
+                      }
+                      注：在修改文档时可以添加新的字段，但该新字段的类型由es自动规定
+            批量修改文档：PUT /索引名/类型名/_bulk
+                        {"index":{"_id":"文档id"}}
+                            {"字段名":"字段值","字段名":"字段值"}
+                        {"delete":{"_id":"文档id"}}
+                        {"update":{"_id":"文档id"}}
+                            {"doc":{"字段名":"字段值","字段名":"字段值"}
 十二·springBoot和任务
 十三·springBoot和安全
 十四·springBoot和分布式
