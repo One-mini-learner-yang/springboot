@@ -689,6 +689,7 @@ if (!registry.hasMappingForPattern("/webjars/**")) {
                         {"delete":{"_id":"文档id"}}
                         {"update":{"_id":"文档id"}}
                             {"doc":{"字段名":"字段值","字段名":"字段值"}
+
 十二·springBoot和任务
 十三·springBoot和安全
 十四·springBoot和分布式
