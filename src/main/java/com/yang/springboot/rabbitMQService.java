@@ -80,4 +80,5 @@ public class rabbitMQService {
         System.out.println(new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss").format(new Date())+message);
         channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
     }
+
 }
