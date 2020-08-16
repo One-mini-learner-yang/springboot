@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.HashMap;
 import java.util.Map;
 
+
 @Configuration
 public class myRabbitMQConfig {
     @Autowired
