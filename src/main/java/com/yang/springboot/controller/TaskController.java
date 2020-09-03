@@ -43,6 +43,7 @@ public class TaskController {
         mimeMessageHelper.addAttachment("作战计划", new File("D:\\steam\\steamapps\\workshop\\content\\431960\\1175327876\\preview.jpg"));
         javaMailSender.send(mimeMailMessage);
         return "success";
+
     }
 
 }
