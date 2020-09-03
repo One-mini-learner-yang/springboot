@@ -6,9 +6,14 @@ import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @EnableCaching
 @EnableRabbit
 @SpringBootApplication
+@EnableAsync
+@EnableScheduling
 public class SpringbootApplication {
 
     public static void main(String[] args) {
